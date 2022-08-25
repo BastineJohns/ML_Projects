@@ -1,0 +1,651 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Untitled2.ipynb",
+      "provenance": [],
+      "authorship_tag": "ABX9TyPlNFdS2BmMW+RWuq501LM7",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    },
+    "accelerator": "GPU",
+    "gpuClass": "standard"
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/BastineJohns/ML_Projects/blob/main/Resume_Parser_Using_Spacy3\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 53,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ivkyc5rVPvdS",
+        "outputId": "f0d77d23-07fc-4ffe-ffed-bf28efc3770c"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Looking in indexes: https://pypi.org/simple, https://us-python.pkg.dev/colab-wheels/public/simple/\n",
+            "Requirement already satisfied: spacy_transformers in /usr/local/lib/python3.7/dist-packages (1.1.8)\n",
+            "Requirement already satisfied: torch>=1.6.0 in /usr/local/lib/python3.7/dist-packages (from spacy_transformers) (1.12.1+cu113)\n",
+            "Requirement already satisfied: srsly<3.0.0,>=2.4.0 in /usr/local/lib/python3.7/dist-packages (from spacy_transformers) (2.4.4)\n",
+            "Requirement already satisfied: spacy<4.0.0,>=3.4.0 in /usr/local/lib/python3.7/dist-packages (from spacy_transformers) (3.4.1)\n",
+            "Requirement already satisfied: spacy-alignments<1.0.0,>=0.7.2 in /usr/local/lib/python3.7/dist-packages (from spacy_transformers) (0.8.5)\n",
+            "Requirement already satisfied: transformers<4.22.0,>=3.4.0 in /usr/local/lib/python3.7/dist-packages (from spacy_transformers) (4.21.2)\n",
+            "Requirement already satisfied: numpy>=1.15.0 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (1.21.6)\n",
+            "Requirement already satisfied: thinc<8.2.0,>=8.1.0 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (8.1.0)\n",
+            "Requirement already satisfied: pydantic!=1.8,!=1.8.1,<1.10.0,>=1.7.4 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (1.9.2)\n",
+            "Requirement already satisfied: typer<0.5.0,>=0.3.0 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (0.4.2)\n",
+            "Requirement already satisfied: requests<3.0.0,>=2.13.0 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (2.23.0)\n",
+            "Requirement already satisfied: jinja2 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (2.11.3)\n",
+            "Requirement already satisfied: setuptools in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (57.4.0)\n",
+            "Requirement already satisfied: spacy-legacy<3.1.0,>=3.0.9 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (3.0.10)\n",
+            "Requirement already satisfied: pathy>=0.3.5 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (0.6.2)\n",
+            "Requirement already satisfied: catalogue<2.1.0,>=2.0.6 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (2.0.8)\n",
+            "Requirement already satisfied: wasabi<1.1.0,>=0.9.1 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (0.10.1)\n",
+            "Requirement already satisfied: tqdm<5.0.0,>=4.38.0 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (4.64.0)\n",
+            "Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (2.0.6)\n",
+            "Requirement already satisfied: spacy-loggers<2.0.0,>=1.0.0 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (1.0.3)\n",
+            "Requirement already satisfied: typing-extensions<4.2.0,>=3.7.4 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (4.1.1)\n",
+            "Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (1.0.8)\n",
+            "Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (3.0.7)\n",
+            "Requirement already satisfied: langcodes<4.0.0,>=3.2.0 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (3.3.0)\n",
+            "Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.7/dist-packages (from spacy<4.0.0,>=3.4.0->spacy_transformers) (21.3)\n",
+            "Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.7/dist-packages (from catalogue<2.1.0,>=2.0.6->spacy<4.0.0,>=3.4.0->spacy_transformers) (3.8.1)\n",
+            "Requirement already satisfied: pyparsing!=3.0.5,>=2.0.2 in /usr/local/lib/python3.7/dist-packages (from packaging>=20.0->spacy<4.0.0,>=3.4.0->spacy_transformers) (3.0.9)\n",
+            "Requirement already satisfied: smart-open<6.0.0,>=5.2.1 in /usr/local/lib/python3.7/dist-packages (from pathy>=0.3.5->spacy<4.0.0,>=3.4.0->spacy_transformers) (5.2.1)\n",
+            "Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.7/dist-packages (from requests<3.0.0,>=2.13.0->spacy<4.0.0,>=3.4.0->spacy_transformers) (2.10)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.7/dist-packages (from requests<3.0.0,>=2.13.0->spacy<4.0.0,>=3.4.0->spacy_transformers) (2022.6.15)\n",
+            "Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.7/dist-packages (from requests<3.0.0,>=2.13.0->spacy<4.0.0,>=3.4.0->spacy_transformers) (3.0.4)\n",
+            "Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.7/dist-packages (from requests<3.0.0,>=2.13.0->spacy<4.0.0,>=3.4.0->spacy_transformers) (1.24.3)\n",
+            "Requirement already satisfied: blis<0.8.0,>=0.7.8 in /usr/local/lib/python3.7/dist-packages (from thinc<8.2.0,>=8.1.0->spacy<4.0.0,>=3.4.0->spacy_transformers) (0.7.8)\n",
+            "Requirement already satisfied: huggingface-hub<1.0,>=0.1.0 in /usr/local/lib/python3.7/dist-packages (from transformers<4.22.0,>=3.4.0->spacy_transformers) (0.9.0)\n",
+            "Requirement already satisfied: importlib-metadata in /usr/local/lib/python3.7/dist-packages (from transformers<4.22.0,>=3.4.0->spacy_transformers) (4.12.0)\n",
+            "Requirement already satisfied: regex!=2019.12.17 in /usr/local/lib/python3.7/dist-packages (from transformers<4.22.0,>=3.4.0->spacy_transformers) (2022.6.2)\n",
+            "Requirement already satisfied: pyyaml>=5.1 in /usr/local/lib/python3.7/dist-packages (from transformers<4.22.0,>=3.4.0->spacy_transformers) (6.0)\n",
+            "Requirement already satisfied: filelock in /usr/local/lib/python3.7/dist-packages (from transformers<4.22.0,>=3.4.0->spacy_transformers) (3.8.0)\n",
+            "Requirement already satisfied: tokenizers!=0.11.3,<0.13,>=0.11.1 in /usr/local/lib/python3.7/dist-packages (from transformers<4.22.0,>=3.4.0->spacy_transformers) (0.12.1)\n",
+            "Requirement already satisfied: click<9.0.0,>=7.1.1 in /usr/local/lib/python3.7/dist-packages (from typer<0.5.0,>=0.3.0->spacy<4.0.0,>=3.4.0->spacy_transformers) (7.1.2)\n",
+            "Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.7/dist-packages (from jinja2->spacy<4.0.0,>=3.4.0->spacy_transformers) (2.0.1)\n",
+            "Looking in indexes: https://pypi.org/simple, https://us-python.pkg.dev/colab-wheels/public/simple/\n",
+            "Requirement already satisfied: spacy in /usr/local/lib/python3.7/dist-packages (3.4.1)\n",
+            "Requirement already satisfied: numpy>=1.15.0 in /usr/local/lib/python3.7/dist-packages (from spacy) (1.21.6)\n",
+            "Requirement already satisfied: requests<3.0.0,>=2.13.0 in /usr/local/lib/python3.7/dist-packages (from spacy) (2.23.0)\n",
+            "Requirement already satisfied: jinja2 in /usr/local/lib/python3.7/dist-packages (from spacy) (2.11.3)\n",
+            "Requirement already satisfied: catalogue<2.1.0,>=2.0.6 in /usr/local/lib/python3.7/dist-packages (from spacy) (2.0.8)\n",
+            "Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /usr/local/lib/python3.7/dist-packages (from spacy) (2.0.6)\n",
+            "Requirement already satisfied: wasabi<1.1.0,>=0.9.1 in /usr/local/lib/python3.7/dist-packages (from spacy) (0.10.1)\n",
+            "Requirement already satisfied: pathy>=0.3.5 in /usr/local/lib/python3.7/dist-packages (from spacy) (0.6.2)\n",
+            "Requirement already satisfied: pydantic!=1.8,!=1.8.1,<1.10.0,>=1.7.4 in /usr/local/lib/python3.7/dist-packages (from spacy) (1.9.2)\n",
+            "Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.7/dist-packages (from spacy) (21.3)\n",
+            "Requirement already satisfied: thinc<8.2.0,>=8.1.0 in /usr/local/lib/python3.7/dist-packages (from spacy) (8.1.0)\n",
+            "Requirement already satisfied: setuptools in /usr/local/lib/python3.7/dist-packages (from spacy) (57.4.0)\n",
+            "Requirement already satisfied: tqdm<5.0.0,>=4.38.0 in /usr/local/lib/python3.7/dist-packages (from spacy) (4.64.0)\n",
+            "Requirement already satisfied: spacy-loggers<2.0.0,>=1.0.0 in /usr/local/lib/python3.7/dist-packages (from spacy) (1.0.3)\n",
+            "Requirement already satisfied: typer<0.5.0,>=0.3.0 in /usr/local/lib/python3.7/dist-packages (from spacy) (0.4.2)\n",
+            "Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /usr/local/lib/python3.7/dist-packages (from spacy) (3.0.7)\n",
+            "Requirement already satisfied: srsly<3.0.0,>=2.4.3 in /usr/local/lib/python3.7/dist-packages (from spacy) (2.4.4)\n",
+            "Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /usr/local/lib/python3.7/dist-packages (from spacy) (1.0.8)\n",
+            "Requirement already satisfied: typing-extensions<4.2.0,>=3.7.4 in /usr/local/lib/python3.7/dist-packages (from spacy) (4.1.1)\n",
+            "Requirement already satisfied: spacy-legacy<3.1.0,>=3.0.9 in /usr/local/lib/python3.7/dist-packages (from spacy) (3.0.10)\n",
+            "Requirement already satisfied: langcodes<4.0.0,>=3.2.0 in /usr/local/lib/python3.7/dist-packages (from spacy) (3.3.0)\n",
+            "Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.7/dist-packages (from catalogue<2.1.0,>=2.0.6->spacy) (3.8.1)\n",
+            "Requirement already satisfied: pyparsing!=3.0.5,>=2.0.2 in /usr/local/lib/python3.7/dist-packages (from packaging>=20.0->spacy) (3.0.9)\n",
+            "Requirement already satisfied: smart-open<6.0.0,>=5.2.1 in /usr/local/lib/python3.7/dist-packages (from pathy>=0.3.5->spacy) (5.2.1)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.7/dist-packages (from requests<3.0.0,>=2.13.0->spacy) (2022.6.15)\n",
+            "Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.7/dist-packages (from requests<3.0.0,>=2.13.0->spacy) (3.0.4)\n",
+            "Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.7/dist-packages (from requests<3.0.0,>=2.13.0->spacy) (1.24.3)\n",
+            "Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.7/dist-packages (from requests<3.0.0,>=2.13.0->spacy) (2.10)\n",
+            "Requirement already satisfied: blis<0.8.0,>=0.7.8 in /usr/local/lib/python3.7/dist-packages (from thinc<8.2.0,>=8.1.0->spacy) (0.7.8)\n",
+            "Requirement already satisfied: click<9.0.0,>=7.1.1 in /usr/local/lib/python3.7/dist-packages (from typer<0.5.0,>=0.3.0->spacy) (7.1.2)\n",
+            "Requirement already satisfied: MarkupSafe>=0.23 in /usr/local/lib/python3.7/dist-packages (from jinja2->spacy) (2.0.1)\n"
+          ]
+        }
+      ],
+      "source": [
+        "!pip install spacy_transformers\n",
+        "!pip install -U spacy"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import spacy\n",
+        "from spacy.tokens import DocBin\n",
+        "from tqdm import tqdm\n",
+        "import json"
+      ],
+      "metadata": {
+        "id": "08sdknhzQKTe"
+      },
+      "execution_count": 37,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!nvidia-smi"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "RBEGZ6vcQXrv",
+        "outputId": "3bcd61dd-801b-4895-f890-a2d663c1325e"
+      },
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Thu Aug 25 09:08:40 2022       \n",
+            "+-----------------------------------------------------------------------------+\n",
+            "| NVIDIA-SMI 460.32.03    Driver Version: 460.32.03    CUDA Version: 11.2     |\n",
+            "|-------------------------------+----------------------+----------------------+\n",
+            "| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |\n",
+            "| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |\n",
+            "|                               |                      |               MIG M. |\n",
+            "|===============================+======================+======================|\n",
+            "|   0  Tesla T4            Off  | 00000000:00:04.0 Off |                    0 |\n",
+            "| N/A   45C    P0    27W /  70W |    312MiB / 15109MiB |      0%      Default |\n",
+            "|                               |                      |                  N/A |\n",
+            "+-------------------------------+----------------------+----------------------+\n",
+            "                                                                               \n",
+            "+-----------------------------------------------------------------------------+\n",
+            "| Processes:                                                                  |\n",
+            "|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |\n",
+            "|        ID   ID                                                   Usage      |\n",
+            "|=============================================================================|\n",
+            "+-----------------------------------------------------------------------------+\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!git clone https://github.com/laxmimerit/CV-Parsing-using-Spacy-3.git\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "uzPU7tujQhPu",
+        "outputId": "36728b1f-cc16-4c7f-e621-be7f393206f4"
+      },
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Cloning into 'CV-Parsing-using-Spacy-3'...\n",
+            "remote: Enumerating objects: 82, done.\u001b[K\n",
+            "remote: Counting objects: 100% (82/82), done.\u001b[K\n",
+            "remote: Compressing objects: 100% (78/78), done.\u001b[K\n",
+            "remote: Total 82 (delta 16), reused 5 (delta 0), pack-reused 0\u001b[K\n",
+            "Unpacking objects: 100% (82/82), done.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# New Section"
+      ],
+      "metadata": {
+        "id": "rgpvNfRRRar-"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "cv_data = json.load(open(r'/content/CV-Parsing-using-Spacy-3/data/training/train_data.json'))"
+      ],
+      "metadata": {
+        "id": "JhhVy9l5RIM2"
+      },
+      "execution_count": 38,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "len(cv_data)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "qjVES5W9SMsu",
+        "outputId": "d08c9262-8019-4fca-8d5f-2ee34fe3a674"
+      },
+      "execution_count": 17,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "200"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 17
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!python -m spacy init fill-config /content/CV-Parsing-using-Spacy-3/data/training/base_config.cfg /content/CV-Parsing-using-Spacy-3/data/training/config.cfg"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "1RzxXGCaSPit",
+        "outputId": "97d6e962-bbfc-48db-a765-154eac245d31"
+      },
+      "execution_count": 18,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[38;5;2m✔ Auto-filled config with all values\u001b[0m\n",
+            "\u001b[38;5;2m✔ Saved config\u001b[0m\n",
+            "/content/CV-Parsing-using-Spacy-3/data/training/config.cfg\n",
+            "You can now add your data and train your pipeline:\n",
+            "python -m spacy train config.cfg --paths.train ./train.spacy --paths.dev ./dev.spacy\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def get_spacy_doc(file, data):\n",
+        "  nlp = spacy.blank('en')\n",
+        "  db = DocBin()\n",
+        "\n",
+        "  for text, annotations in tqdm(data):\n",
+        "    doc = nlp.make_doc(text)\n",
+        "    annot = annotations['entities']\n",
+        "\n",
+        "    ents = []\n",
+        "    entity_indices = []\n",
+        "\n",
+        "    for start, end, label in annot:\n",
+        "      skip_entity = False\n",
+        "      for idx in range(start, end):\n",
+        "        if idx in entity_indices:\n",
+        "          skip_entity == True\n",
+        "          break\n",
+        "      if skip_entity == True:\n",
+        "        continue    \n",
+        "      \n",
+        "      entity_indices = entity_indices + list(range(start, end))\n",
+        "      \n",
+        "      try:\n",
+        "        span = doc.char_span(start, end, label=label, alignment_mode='strict')\n",
+        "      except:\n",
+        "        continue\n",
+        "\n",
+        "      if span is None:\n",
+        "        err_data = str([start, end]) + \" \" + str(text) + \"\\n\"\n",
+        "        file.write(err_data) \n",
+        "      \n",
+        "      else:\n",
+        "        ents.append(span)\n",
+        "\n",
+        "  try:\n",
+        "     doc.ents = ents\n",
+        "     db.add(doc) \n",
+        "  except:\n",
+        "     pass\n",
+        "\n",
+        "  return db   \n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "    "
+      ],
+      "metadata": {
+        "id": "G8ZIxUAXTP9u"
+      },
+      "execution_count": 39,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.model_selection import train_test_split\n",
+        "train, test = train_test_split(cv_data, test_size=0.3)\n",
+        "len(train)\n",
+        "\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "35Hpk1pdeNhV",
+        "outputId": "d731122b-d689-4750-a809-8a7def818352"
+      },
+      "execution_count": 43,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "140"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 43
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "file = open('error.txt','w')\n",
+        "\n",
+        "db = get_spacy_doc(file, train)\n",
+        "db.to_disk('train_data.spacy')\n",
+        "\n",
+        "db = get_spacy_doc(file, test)\n",
+        "db.to_disk('test_data.spacy')\n",
+        "\n",
+        "file.close()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "gg0Wq5dFelGb",
+        "outputId": "df3b4274-4e91-428c-cd1e-22226c428002"
+      },
+      "execution_count": 41,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "100%|██████████| 140/140 [00:01<00:00, 114.44it/s]\n",
+            "100%|██████████| 60/60 [00:00<00:00, 92.02it/s]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "len(db.tokens)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "N7nMTy3mepAE",
+        "outputId": "38dd0943-7f0b-4015-a16c-bcda87d95fd7"
+      },
+      "execution_count": 45,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "1"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 45
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!python -m spacy train /content/CV-Parsing-using-Spacy-3/data/training/config.cfg --output ./output --paths.train ./train_data.spacy --paths.dev ./test_data.spacy"
+      ],
+      "metadata": {
+        "id": "ZKWdfr5BgNEV"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install PyMuPDF"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "WyPMfdZgk5Ck",
+        "outputId": "5c1441fe-d9f0-47b4-8945-f23934f06664"
+      },
+      "execution_count": 49,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Looking in indexes: https://pypi.org/simple, https://us-python.pkg.dev/colab-wheels/public/simple/\n",
+            "Collecting PyMuPDF\n",
+            "  Downloading PyMuPDF-1.20.2-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (8.8 MB)\n",
+            "\u001b[K     |████████████████████████████████| 8.8 MB 28.7 MB/s \n",
+            "\u001b[?25hInstalling collected packages: PyMuPDF\n",
+            "Successfully installed PyMuPDF-1.20.2\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Model Test\n"
+      ],
+      "metadata": {
+        "id": "H1_Mx2eV3omj"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "nlp = spacy.blank('en')\n",
+        "nlp.from_disk('/content/output/model-best')\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "bHcpNmiLoazs",
+        "outputId": "7e98a5fc-5ab3-4df9-e71b-96590a5e96a1"
+      },
+      "execution_count": 81,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "<spacy.lang.en.English at 0x7f2cc6ec34d0>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 81
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import sys, fitz"
+      ],
+      "metadata": {
+        "id": "EB18Z6k830Pq"
+      },
+      "execution_count": 56,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "fname = '/content/CV-Parsing-using-Spacy-3/data/test/Alice Clark CV.pdf'\n",
+        "doc = fitz.open(fname)"
+      ],
+      "metadata": {
+        "id": "wPbFZEQr9Kgz"
+      },
+      "execution_count": 66,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "doc"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "47oMNoYn9SvM",
+        "outputId": "d02850bd-1928-4c75-decb-14871ba26366"
+      },
+      "execution_count": 67,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Document('/content/CV-Parsing-using-Spacy-3/data/test/Alice Clark CV.pdf')"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 67
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "doc = [page.get_text() for page in doc]\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "Ic7Ots9b9T9C"
+      },
+      "execution_count": 68,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "doc = str(doc)\n",
+        "text = doc.strip()"
+      ],
+      "metadata": {
+        "id": "-AW6b8Aj9wmy"
+      },
+      "execution_count": 72,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "text = ' '.join(text.split())"
+      ],
+      "metadata": {
+        "id": "vAlh5XZZ94_C"
+      },
+      "execution_count": 77,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "text"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 122
+        },
+        "id": "w4BqT5Un_hfz",
+        "outputId": "0a73c6ad-23c1-4617-d17f-48f04240593b"
+      },
+      "execution_count": 78,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "\"['Alice Clark \\\\nAI / Machine Learning \\\\n \\\\nDelhi, India Email me on Indeed \\\\n• \\\\n20+ years of experience in data handling, design, and development \\\\n• \\\\nData Warehouse: Data analysis, star/snow flake scema data modelling and design specific to \\\\ndata warehousing and business intelligence \\\\n• \\\\nDatabase: Experience in database designing, scalability, back-up and recovery, writing and \\\\noptimizing SQL code and Stored Procedures, creating functions, views, triggers and indexes. \\\\nCloud platform: Worked on Microsoft Azure cloud services like Document DB, SQL Azure, \\\\nStream Analytics, Event hub, Power BI, Web Job, Web App, Power BI, Azure data lake \\\\nanalytics(U-SQL) \\\\nWilling to relocate anywhere \\\\n \\\\nWORK EXPERIENCE \\\\nSoftware Engineer \\\\nMicrosoft – Bangalore, Karnataka \\\\nJanuary 2000 to Present \\\\n1. Microsoft Rewards Live dashboards: \\\\nDescription: - Microsoft rewards is loyalty program that rewards Users for browsing and shopping \\\\nonline. Microsoft Rewards members can earn points when searching with Bing, browsing with \\\\nMicrosoft Edge and making purchases at the Xbox Store, the Windows Store and the Microsoft \\\\nStore. Plus, user can pick up bonus points for taking daily quizzes and tours on the Microsoft \\\\nrewards website. Rewards live dashboards gives a live picture of usage world-wide and by \\\\nmarkets like US, Canada, Australia, new user registration count, top/bottom performing rewards \\\\noffers, orders stats and weekly trends of user activities, orders and new user registrations. the \\\\nPBI tiles gets refreshed in different frequencies starting from 5 seconds to 30 minutes. \\\\nTechnology/Tools used \\\\n \\\\nEDUCATION \\\\nIndian Institute of Technology – Mumbai \\\\n2001 \\\\n \\\\nSKILLS \\\\nMachine Learning, Natural Language Processing, and Big Data Handling \\\\n \\\\n', 'ADDITIONAL INFORMATION \\\\nProfessional Skills \\\\n• Excellent analytical, problem solving, communication, knowledge transfer and interpersonal \\\\nskills with ability to interact with individuals at all the levels \\\\n• Quick learner and maintains cordial relationship with project manager and team members and \\\\ngood performer both in team and independent job environments \\\\n• Positive attitude towards superiors &amp; peers \\\\n• Supervised junior developers throughout project lifecycle and provided technical assistance \\\\n']\""
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            }
+          },
+          "metadata": {},
+          "execution_count": 78
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "doc = nlp(text)\n",
+        "print(doc.ents)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "glu-t5ez_iga",
+        "outputId": "c32b6de0-29c5-4e03-984a-1d028b4293e3"
+      },
+      "execution_count": 86,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "()\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "DmqEegnqABmy"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
